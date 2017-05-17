@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="Libraries/angular.js"></script>
+    <link href="Libraries/bootstrap-theme.css" rel="stylesheet" />
+    <link href="Libraries/bootstrap.css" rel="stylesheet" />
+    <link href="style.css" rel="stylesheet" />
+    <script type="text/javascript" src="testApp.js"></script>
+
+  </head>
+  <body ng-app="vkApp" ng-controller="vkCtrl">
+
+    <div class="container">
+
+
+      <div class="row">
+        <form name="inputForm" novalidate>
+          <div class="well">
+            <div class="form-group">
+              <label>Input domain:
+              <input type="text" name="domain" class="form-control" required ng-model="new.domain" ng-focus="flagDomain=true" ng-blur="flagDomain=false" />
+              </label>
+              <span class="message" ng-show="flagDomain">
+                {{messageDomain()}}
+              </span>
+              <div class="error" ng-show="inputForm.domain.$dirty">
+                  {{getError(inputForm.domain.$error)}}
+              </div>
+            </div>
+
+
+            <div class="form-group">
+              <label>Input count:
+              <input type="text" name="count" class="form-control" required ng-model="new.count" ng-pattern="/\d/" ng-focus="flagCount=true" ng-blur="flagCount=false" />
+              </label>
+              <span class="message" ng-show="flagCount">
+                {{messageCount()}}
+              </span>
+              <div class="error" ng-show="inputForm.count.$dirty">
+                {{getError(inputForm.count.$error)}}
+              </div>
+            </div>
+
+
+            <div class="form-group">
+              <label>Input offset:
+              <input type="text" name="offset" class="form-control" required ng-model="new.offset" ng-pattern="/\d/" ng-focus="flagOffset=true" ng-blur="flagOffset=false" />
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" ng-disabled="inputForm.$invalid" ng-click="get(new.domain, new.count, new.offset)">Load</button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+            <div class="col-lg-4 col-md-4 col-sm-6" ng-repeat="item in newitems" clear>
+              <div class="thumbnail">
+                <div class="caption">
+                  <div><h6>{{item.header}}</h6><a href={{item.url}}>{{item.url}}</a></div>
+                  <div><img ng-src="{{item.image}}" alt="" ></div>
+                </div>
+              </div>
+            </div>
+      </div>
+
+      <div class="pagination-center">
+        <ul class="pagination">
+          <li ng-repeat="page in pagArray" ng-click="getPage(page.link)" ng-class="{'active': getCurrPageNum() == page.link}"><a ng-bind-html="page.name"></a></li>
+        </ul>
+      </div>
+    </div>
+
+  </body>
+</html>

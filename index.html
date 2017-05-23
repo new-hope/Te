@@ -46,28 +46,29 @@
 
             <div class="form-group">
               <label>Input offset:
-              <input type="text" name="offset" class="form-control" required ng-model="new.offset" ng-pattern="/\d/" ng-focus="flagOffset=true" ng-blur="flagOffset=false" />
+              <input type="text" name="offset" value="0" class="form-control" ng-model="new.offset" ng-pattern="/\d/" ng-focus="flagOffset=true" ng-blur="flagOffset=false" />
               </label>
             </div>
 
-            <button type="submit" class="btn btn-primary" ng-disabled="inputForm.$invalid" ng-click="get(new.domain, new.count, new.offset)">Load</button>
+            <button type="submit" class="btn btn-primary" ng-disabled="inputForm.$invalid" ng-click="get(new.domain, new.count, new.offset)">Загрузить</button>
           </div>
 
         </form>
 
-      </div>
-    </div>
-
-    <div class="container">
-      <div class="row">
-            <div class="col-lg-4 col-md-4 col-sm-6" ng-repeat="item in newitems" clear>
+          <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-6" ng-repeat="item in newitems" clear>
               <div class="thumbnail">
                 <div class="caption">
-                  <div><h6>{{item.header}}</h6><a href={{item.url}}>{{item.url}}</a></div>
-                  <div><img ng-src="{{item.image}}" alt="" ></div>
+                  <div class="image text-center"><img class="img-thumbnail center-block" ng-src="{{item.image}}" alt="" /></div>
+                  <div class="text-muted date">{{item.date | date: "fullDate"}}</div>
+                  <div class=""><hr></div>
+                  <div class="clearfix"></div>
+                  <div><div class="h5 text-justify font">{{item.header}}</div><a href={{item.url}} target="_blank">Читать далее...</a></div>
                 </div>
               </div>
             </div>
+          </div>
+
       </div>
 
       <div class="pagination-center">

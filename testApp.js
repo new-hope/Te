@@ -6,49 +6,43 @@ var app = angular.module("vkApp", [])
           if(!(i % 2)) {
             angular.element(elem).after('<div class="clearfix visible-sm"></div>');
           }
-          if( !(i % 3) ) {
-            angular.element(elem).after('<div class="clearfix visible-lg"></div>');
+          if(!(i % 3)) {
             angular.element(elem).after('<div class="clearfix visible-md"></div>');
+          }
+          if(!(i % 4)) {
+            angular.element(elem).after('<div class="clearfix visible-lg"></div>');
           }
         }
       };
     }])
-    .factory("vkApiService", function ($http) {
-      var items = [];
+    .factory("vkApiService", function ($http, $q) {
+
       return {
         getPromise: function(domain, count, offset) {
           var url = "https://api.vk.com/method/wall.get?domain=" + domain + "&count=" + count + "&offset=" + offset + "&callback=JSON_CALLBACK";
-          var promise = $http.jsonp(url);
+          var promise = $http.jsonp(url).success(function (res) {
+            console.log(res);
+          });
           return promise;
         },
 
         getWall: function(domain, count, offset) {
-          this.getPromise(domain, count, offset).then(function (response) {
-            items = items.concat(response.data.response.slice(1));
-          }, function (error) {
-            console.log("Error");
-          });
-          return items;
-        },
+          var promises = [];
+          var off = offset;
 
-        getWallAll: function(domain, count, offset) {
-          if (count > 100){
-            var off = offset;
             while (count > 0) {
-              this.getWall(domain, count, off);
+              promises.push(this.getPromise(domain, count, off));
               count -= 100;
               off += 100;
             }
-          return items;
-          }else {
-              return this.getWall(domain, count, offset);
-            }
+
+          return $q.all(promises);
         }
       };
     })
     .factory("pagination", function($sce) {
       var currPage = 0;
-      var itemsPerPage = 9;
+      var itemsPerPage = 12;
       var items = [];
 
       return {
@@ -119,6 +113,12 @@ var app = angular.module("vkApp", [])
       }
     })
     .controller("vkCtrl", ["$scope", "vkApiService", "pagination", function($scope, vkApiService, pagination){
+        $scope.newitems = [];
+        $scope.new = {domain: "extrawebdev",
+                      count: 20,
+                      offset: 0};
+
+
         $scope.getError = function (error) {
             if (angular.isDefined(error)) {
                 if (error.required) {
@@ -135,20 +135,8 @@ var app = angular.module("vkApp", [])
           return "Введите количество записей для загрузки";
         };
 
-
-        $scope.items = [];
-        $scope.newitems;
-
-        function isEmpty() {
-          if ($scope.items.length === 0) {
-              $scope.flagLoad = true;
-          } else {
-              $scope.flagLoad = false;
-            }
-        };
-
         $scope.get = function (domain, count, offset) {
-          getWallApi(domain, count, offset);
+          $scope.changePromisesArray(domain, count, offset);
         };
 
         $scope.getPage = function(numPage) {
@@ -165,15 +153,18 @@ var app = angular.module("vkApp", [])
           return pagination.getCurrPageNum();
         };
 
-        function getWallApi(d, c, o) {
-          var newitems = vkApiService.getWallAll(d, c, o);
-          console.log(newitems);
-          newitems = changeArray(newitems);
-          console.log(newitems);
-          pagination.setItems(newitems);
-          $scope.newitems = pagination.getPageItems();
-          $scope.pagArray = pagination.getPagArray();
-          console.log(newitems);
+        $scope.changePromisesArray = function(d, c, o) {
+          vkApiService.getWall(d, c, o).
+            then(function(response) {
+              $scope.items = response.reduce(function(result, current) {
+                return result.concat(current.data.response.slice(1));
+              }, []);
+            $scope.items = changeArray($scope.items);
+            console.log($scope.items);
+            pagination.setItems($scope.items);
+            $scope.newitems = pagination.getPageItems();
+            $scope.pagArray = pagination.getPagArray();
+          });
         }
 
         function changeArray(array) {
@@ -183,12 +174,45 @@ var app = angular.module("vkApp", [])
             if (angular.isDefined(item.attachment)){
               switch (item.attachment.type) {
                 case "photo":
-                  obj.header = serchHeader(item.text);
-                  obj.url = searchUrl(item.text);
-                  obj.image = item.attachment.photo.src;
-
+                  obj = {
+                          header: serchHeader(item.text),
+                          url: searchUrl(item.text),
+                          image: item.attachment.photo.src,
+                          date: item.date * 1000
+                        };
+                  if (angular.isDefined(item.attachments) && item.attachments[item.attachments.length - 1].type === "link") {
+                    obj.header = item.attachments[item.attachments.length - 1].link.title;
+                    obj.url = item.attachments[item.attachments.length - 1].link.url;
+                  }
                   break;
-
+                case "link":
+                  obj = {
+                          header: item.attachment.link.title,
+                          url: item.attachment.link.url,
+                          image: item.attachment.link.image_src,
+                          date: item.date * 1000
+                        };
+                  if (angular.isDefined(item.attachments) && item.attachments[item.attachments.length - 1].type === "link") {
+                    obj.header = item.attachments[item.attachments.length - 1].link.title;
+                    obj.url = item.attachments[item.attachments.length - 1].link.url;
+                  }
+                  break;
+                case "video":
+                  obj = {
+                          header: serchHeader(item.text),
+                          url: null,
+                          image: item.attachment.video.image,
+                          date: item.date * 1000
+                        };
+                  break;
+                case "doc":
+                  obj = {
+                          header: serchHeader(item.text),
+                          url: searchUrl(item.text),
+                          image: item.attachment.doc.thumb,
+                          date: item.date * 1000
+                        };
+                  break;
               }
             }
             items.push(obj);
@@ -198,14 +222,17 @@ var app = angular.module("vkApp", [])
         }
 
         function serchHeader(str) {
-          var reg = /https/;
-          var pos = str.search(reg);
+          var reg = /http/;
+          var pos = str.search(reg) > 0? str.search(reg):str.length;
           var string = str.slice(0, pos).replace(/<br>/g, "");
+          if (string.length > 100) {
+            return string.slice(0, 100).replace(/<br>/g, "") + "...";
+          }
           return string;
         }
 
         function searchUrl(str) {
-          var reg = /https/;
+          var reg = /http/;
           var startPos = str.search(reg);
           var endPos = str.indexOf("<br>", startPos);
           var string = str.slice(startPos, endPos);

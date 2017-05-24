@@ -19,7 +19,7 @@
         <form name="inputForm" novalidate>
           <div class="well">
             <div class="form-group">
-              <label>Input domain:
+              <label>Введите имя пользователя или сообщества:
               <input type="text" name="domain" class="form-control" required ng-model="new.domain" ng-focus="flagDomain=true" ng-blur="flagDomain=false" />
               </label>
               <span class="message" ng-show="flagDomain">
@@ -32,7 +32,7 @@
 
 
             <div class="form-group">
-              <label>Input count:
+              <label>Введите количество записей:
               <input type="text" name="count" class="form-control" required ng-model="new.count" ng-pattern="/\d/" ng-focus="flagCount=true" ng-blur="flagCount=false" />
               </label>
               <span class="message" ng-show="flagCount">
@@ -45,8 +45,8 @@
 
 
             <div class="form-group">
-              <label>Input offset:
-              <input type="text" name="offset" value="0" class="form-control" ng-model="new.offset" ng-pattern="/\d/" ng-focus="flagOffset=true" ng-blur="flagOffset=false" />
+              <label>Введите число смещения:
+              <input type="text" name="offset" class="form-control" ng-model="new.offset" ng-pattern="/\d/" ng-focus="flagOffset=true" ng-blur="flagOffset=false" />
               </label>
             </div>
 
@@ -55,15 +55,15 @@
 
         </form>
 
-          <div class="row">
-            <div class="col-lg-3 col-md-4 col-sm-6" ng-repeat="item in newitems" clear>
+          <div class="row masonry">
+            <div class="brick" ng-repeat="item in newitems">
               <div class="thumbnail">
                 <div class="caption">
-                  <div class="image text-center"><img class="img-thumbnail center-block" ng-src="{{item.image}}" alt="" /></div>
+                  <div class="text-center"><img class="img-thumbnail center-block" ng-src="{{item.image}}" /></div>
                   <div class="text-muted date">{{item.date | date: "fullDate"}}</div>
-                  <div class=""><hr></div>
+                  <hr>
                   <div class="clearfix"></div>
-                  <div><div class="h5 text-justify font">{{item.header}}</div><a href={{item.url}} target="_blank">Читать далее...</a></div>
+                  <div><div class="h5 text-justify font">{{item.header}}</div><a href={{item.url}} target="_blank">Узнать больше>></a></div>
                 </div>
               </div>
             </div>

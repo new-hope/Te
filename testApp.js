@@ -225,10 +225,7 @@ var app = angular.module("vkApp", [])
           var reg = /http/;
           var pos = str.search(reg) > 0? str.search(reg):str.length;
           var string = str.slice(0, pos).replace(/<br>/g, "");
-          if (string.length > 100) {
-            return string.slice(0, 100).replace(/<br>/g, "") + "...";
-          }
-          return string;
+          return cutText(string, 100);
         }
 
         function searchUrl(str) {
@@ -237,6 +234,17 @@ var app = angular.module("vkApp", [])
           var endPos = str.indexOf("<br>", startPos);
           var string = str.slice(startPos, endPos);
           return string;
+        }
+
+        function cutText(text, lim) {
+          if (text.length <= lim) {
+            return text;
+          }
+          text = text.slice(0, lim + 1);
+          var lastBlank = text.lastIndexOf(" ");
+          if (lastBlank > 0) {
+            return text.slice(0, lastBlank) + "...";
+          }
         }
 
     }])
